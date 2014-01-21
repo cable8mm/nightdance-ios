@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PreferenceSpecifiers</key>
+	<array>
+		<dict>
+			<key>Title</key>
+			<string>알림 설정</string>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+		</dict>
+		<dict>
+			<key>DefaultValue</key>
+			<true/>
+			<key>Key</key>
+			<string>clip_updated_preference</string>
+			<key>Title</key>
+			<string>동영상 업데이트</string>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+		</dict>
+		<dict>
+			<key>DefaultValue</key>
+			<true/>
+			<key>Key</key>
+			<string>upgrade_preference</string>
+			<key>Title</key>
+			<string>새 버전 업데이트</string>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>다운로드 설정</string>
+		</dict>
+		<dict>
+			<key>DefaultValue</key>
+			<false/>
+			<key>Key</key>
+			<string>lte_download_preference</string>
+			<key>Title</key>
+			<string>3G / LTE 다운로드</string>
+			<key>Type</key>
+			<string>PSToggleSwitchSpecifier</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSTitleValueSpecifier</string>
+			<key>Title</key>
+			<string>아싸 가오리</string>
+			<key>Key</key>
+			<string>title_preference</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSGroupSpecifier</string>
+			<key>Title</key>
+			<string>당신의 춤실력</string>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>춤 실력</string>
+			<key>Key</key>
+			<string>user_dance_preference</string>
+			<key>DefaultValue</key>
+			<string>0</string>
+			<key>Titles</key>
+			<array>
+				<string>모름</string>
+				<string>초급</string>
+				<string>중급</string>
+				<string>고급</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>0</string>
+				<string>1</string>
+				<string>2</string>
+				<string>3</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>성별</string>
+			<key>Key</key>
+			<string>user_sex_preference</string>
+			<key>DefaultValue</key>
+			<string>0</string>
+			<key>Titles</key>
+			<array>
+				<string>모름</string>
+				<string>남성</string>
+				<string>여성</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>0</string>
+				<string>1</string>
+				<string>2</string>
+			</array>
+		</dict>
+		<dict>
+			<key>Type</key>
+			<string>PSMultiValueSpecifier</string>
+			<key>Title</key>
+			<string>나이</string>
+			<key>Key</key>
+			<string>user_age_preference</string>
+			<key>DefaultValue</key>
+			<string>0</string>
+			<key>Titles</key>
+			<array>
+				<string>모름</string>
+				<string>10대</string>
+				<string>20대</string>
+				<string>30대</string>
+				<string>40대</string>
+				<string>50대 이상</string>
+			</array>
+			<key>Values</key>
+			<array>
+				<string>0</string>
+				<string>1</string>
+				<string>2</string>
+				<string>3</string>
+				<string>4</string>
+				<string>5</string>
+			</array>
+		</dict>
+	</array>
+	<key>StringsTable</key>
+	<string>Root</string>
+</dict>
+</plist>
