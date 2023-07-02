@@ -12,6 +12,7 @@
 @property (nonatomic) int score;
 @property (nonatomic, retain) UIView *emptyStars;
 @property (nonatomic, retain) UIView *fullStars;
+@property (nonatomic, retain) UILabel *emptyLabel;
 
 - (void)setScore:(int)score;
 @end

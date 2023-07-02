@@ -1,0 +1,123 @@
+
+/* Class = "IBUITextField"; placeholder = "닉네임"; ObjectID = "06A-d1-vgt"; */
+"06A-d1-vgt.placeholder" = "닉네임";
+
+/* Class = "IBUIBarButtonItem"; title = "찜하기"; ObjectID = "19a-3J-g14"; */
+"19a-3J-g14.title" = "찜하기";
+
+/* Class = "IBUINavigationItem"; title = "새로운 계정"; ObjectID = "2cJ-AQ-WUB"; */
+"2cJ-AQ-WUB.title" = "새로운 계정";
+
+/* Class = "IBUITextView"; text = "Review"; ObjectID = "2oV-0Y-dhA"; */
+"2oV-0Y-dhA.text" = "Review";
+
+/* Class = "IBUITabBarItem"; title = "보관함"; ObjectID = "5lj-mD-qr4"; */
+"5lj-mD-qr4.title" = "보관함";
+
+/* Class = "IBUITabBarItem"; title = "내 정보"; ObjectID = "7H2-H8-GKP"; */
+"7H2-H8-GKP.title" = "내 정보";
+
+/* Class = "IBUIButton"; normalTitle = "다운로드"; ObjectID = "8AZ-95-ZzZ"; */
+"8AZ-95-ZzZ.normalTitle" = "다운로드";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "AGr-S1-55s"; */
+"AGr-S1-55s.text" = "Title";
+
+/* Class = "IBUINavigationItem"; title = "내 정보"; ObjectID = "ApW-oJ-5vG"; */
+"ApW-oJ-5vG.title" = "내 정보";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "BAb-d3-IeJ"; */
+"BAb-d3-IeJ.text" = "Title";
+
+/* Class = "IBUIBarButtonItem"; title = "카테고리"; ObjectID = "FYa-Nq-lW8"; */
+"FYa-Nq-lW8.title" = "카테고리";
+
+/* Class = "IBUINavigationItem"; title = "다운로드"; ObjectID = "GS2-Le-yoC"; */
+"GS2-Le-yoC.title" = "다운로드";
+
+/* Class = "IBUIButton"; normalTitle = "3일 시청"; ObjectID = "ITW-8C-bSp"; */
+"ITW-8C-bSp.normalTitle" = "3일 시청";
+
+/* Class = "IBUINavigationItem"; title = "동영상 강좌"; ObjectID = "JwI-5k-r0w"; */
+"JwI-5k-r0w.title" = "동영상 강좌";
+
+/* Class = "IBUITextField"; placeholder = "나이트댄스 아이디"; ObjectID = "NtL-tF-pTc"; */
+"NtL-tF-pTc.placeholder" = "나이트댄스 아이디";
+
+/* Class = "IBUILabel"; text = "Dancers"; ObjectID = "OET-zL-1Kv"; */
+"OET-zL-1Kv.text" = "Dancers";
+
+/* Class = "IBUIButton"; normalTitle = "계정 만들기"; ObjectID = "QF3-1F-6oC"; */
+"QF3-1F-6oC.normalTitle" = "계정 만들기";
+
+/* Class = "IBUITextView"; text = "Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda."; ObjectID = "QIt-43-MmF"; */
+"QIt-43-MmF.text" = "Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.";
+
+/* Class = "IBUINavigationItem"; title = "카테고리"; ObjectID = "R9r-9H-NNT"; */
+"R9r-9H-NNT.title" = "카테고리";
+
+/* Class = "IBUIBarButtonItem"; title = "엔캐시 충전"; ObjectID = "Rge-dO-x81"; */
+"Rge-dO-x81.title" = "엔캐시 충전";
+
+/* Class = "IBUISegmentedControl"; SQX-9D-kLL.segmentTitles[0] = "상세 설명"; ObjectID = "SQX-9D-kLL"; */
+"SQX-9D-kLL.segmentTitles[0]" = "상세 설명";
+
+/* Class = "IBUISegmentedControl"; SQX-9D-kLL.segmentTitles[1] = "리뷰"; ObjectID = "SQX-9D-kLL"; */
+"SQX-9D-kLL.segmentTitles[1]" = "리뷰";
+
+/* Class = "IBUISegmentedControl"; SQX-9D-kLL.segmentTitles[2] = "함께 보기"; ObjectID = "SQX-9D-kLL"; */
+"SQX-9D-kLL.segmentTitles[2]" = "함께 보기";
+
+/* Class = "IBUITabBarItem"; title = "강좌"; ObjectID = "UKo-UQ-I37"; */
+"UKo-UQ-I37.title" = "강좌";
+
+/* Class = "IBUISearchBar"; placeholder = "강좌 제목, 강사, 음악으로 검색"; ObjectID = "YCP-9d-7fY"; */
+"YCP-9d-7fY.placeholder" = "강좌 제목, 강사, 음악으로 검색";
+
+/* Class = "IBUISegmentedControl"; Yew-Fo-zH5.segmentTitles[0] = "구입한 강좌"; ObjectID = "Yew-Fo-zH5"; */
+"Yew-Fo-zH5.segmentTitles[0]" = "구입한 강좌";
+
+/* Class = "IBUISegmentedControl"; Yew-Fo-zH5.segmentTitles[1] = "찜한 강좌"; ObjectID = "Yew-Fo-zH5"; */
+"Yew-Fo-zH5.segmentTitles[1]" = "찜한 강좌";
+
+/* Class = "IBUITextField"; placeholder = "나이트댄스 비밀번호"; ObjectID = "gne-Qw-U2L"; */
+"gne-Qw-U2L.placeholder" = "나이트댄스 비밀번호";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "hdq-wx-iff"; */
+"hdq-wx-iff.text" = "Title";
+
+/* Class = "IBUITextField"; placeholder = "나이트댄스 아이디"; ObjectID = "kDu-mo-GqC"; */
+"kDu-mo-GqC.placeholder" = "나이트댄스 아이디";
+
+/* Class = "IBUINavigationItem"; title = "엔캐시 충전"; ObjectID = "lHT-rx-NUE"; */
+"lHT-rx-NUE.title" = "엔캐시 충전";
+
+/* Class = "IBUIBarButtonItem"; title = "회원 가입"; ObjectID = "lvU-bY-Lif"; */
+"lvU-bY-Lif.title" = "회원 가입";
+
+/* Class = "IBUILabel"; text = "Detail"; ObjectID = "od9-e3-wtZ"; */
+"od9-e3-wtZ.text" = "Detail";
+
+/* Class = "IBUITextField"; placeholder = "나이트댄스 비밀번호"; ObjectID = "qkL-nB-wvA"; */
+"qkL-nB-wvA.placeholder" = "나이트댄스 비밀번호";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "s3D-xn-fhI"; */
+"s3D-xn-fhI.text" = "Title";
+
+/* Class = "IBUILabel"; text = "Write"; ObjectID = "sG1-9h-Fm0"; */
+"sG1-9h-Fm0.text" = "Write";
+
+/* Class = "IBUILabel"; text = "Title"; ObjectID = "tbT-MM-4zY"; */
+"tbT-MM-4zY.text" = "Title";
+
+/* Class = "IBUIButton"; normalTitle = "로그아웃"; ObjectID = "wFA-1H-X8e"; */
+"wFA-1H-X8e.normalTitle" = "로그아웃";
+
+/* Class = "IBUILabel"; text = "아이디와 비밀번호를 입력해 주세요."; ObjectID = "xHH-a0-f7d"; */
+"xHH-a0-f7d.text" = "아이디와 비밀번호를 입력해 주세요.";
+
+/* Class = "IBUIButton"; normalTitle = "미리보기"; ObjectID = "xUI-6H-ebk"; */
+"xUI-6H-ebk.normalTitle" = "미리보기";
+
+/* Class = "IBUIButton"; normalTitle = "로그인"; ObjectID = "zp2-lT-Klf"; */
+"zp2-lT-Klf.normalTitle" = "로그인";

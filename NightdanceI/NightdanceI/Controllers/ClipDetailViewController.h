@@ -7,25 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <StoreKit/StoreKit.h>
+#import "WriteReviewViewController.h"
 
 @class ClipPlayerViewController;
 
-@interface ClipDetailViewController : UITableViewController <UIWebViewDelegate, SKProductsRequestDelegate> {
+@interface ClipDetailViewController : UITableViewController <UIWebViewDelegate, UIAlertViewDelegate, CommentDataDelegate> {
     UIImageView *thumbnail;
     NSNumber *clipId;
     ClipPlayerViewController *_moviePlayer;
-    
-    SKProduct *proUpgradeProduct;
-    SKProductsRequest *productsRequest;
 }
 @property (strong, nonatomic) NSNumber *clipId;
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 - (BOOL)shouldAutorotate;
 - (NSUInteger)supportedInterfaceOrientations;
-- (void)requestProUpgradeProductData;
-
 @end
 
 NSString *GetSexString(int i);

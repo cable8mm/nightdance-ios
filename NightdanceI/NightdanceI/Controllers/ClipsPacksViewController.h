@@ -7,7 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CategoriesViewController.h"
 
-@interface ClipsPacksViewController : UITableViewController
+@interface ClipsPacksViewController : UITableViewController <BackDataDelegate> {
+    int selectedCategoryId;
+}
+@property (nonatomic) int selectedCategoryId;
 
 @end

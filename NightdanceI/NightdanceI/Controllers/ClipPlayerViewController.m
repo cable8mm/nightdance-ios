@@ -7,6 +7,7 @@
 //
 
 #import "ClipPlayerViewController.h"
+#import "AVFoundation/AVAudioSession.h"
 
 @interface ClipPlayerViewController ()
 
@@ -29,6 +30,12 @@
 	// Do any additional setup after loading the view.
     self.moviePlayer.controlStyle = MPMovieControlStyleFullscreen; // MPMovieControlStyleDefault
     self.moviePlayer.shouldAutoplay = YES;
+    self.moviePlayer.allowsAirPlay  = YES;
+//    self.moviePlayer.controlStyle   = MPMovieControlStyleEmbedded;
+    self.moviePlayer.fullscreen = YES;
+    
+    NSError *setCategoryError = nil;
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: &setCategoryError];
 }
 
 - (void)didReceiveMemoryWarning

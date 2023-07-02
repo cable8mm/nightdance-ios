@@ -10,17 +10,22 @@
 #import "SCManager.h"
 #import "UserManager.h"
 #import "GlobalFunctions.h"
+#import "SAManager.h"
+
+typedef NS_ENUM(NSInteger, ButtonStatus) {
+    ButtonStatusRefresh = 0,
+    ButtonStatusLogOut   = 1,
+};
 
 @interface MyInfoViewController ()
 @property(nonatomic, retain) IBOutlet UIBarButtonItem *upperRightButton;    // 회원가입 & 로그아웃
-@property(nonatomic, retain) IBOutlet UIBarButtonItem *upperLeftButton;    // 엔캐시 충전
 @property(nonatomic, retain) IBOutlet UITextField *textUsername;
 @property(nonatomic, retain) IBOutlet UITextField *textPassword;
-@property(nonatomic, retain) IBOutlet UIView *loginView;
-@property(nonatomic, retain) IBOutlet UIView *logoutView;
+@property(nonatomic, retain) IBOutlet UIButton *logoutButton;
+
 @property(nonatomic, retain) UITapGestureRecognizer *tap;
-- (IBAction)login:(id)sender;
-- (IBAction)logout:(id)sender;
+@property(nonatomic) BOOL isNetworkAvailable;
+- (void)logout;
 -(IBAction)closeKeyboard:(id)sender;
 @end
 
@@ -42,70 +47,42 @@
     [[UIApplication sharedApplication] sendAction:@selector(resignFirstResponder) to:nil from:nil forEvent:nil];
 }
 
-- (IBAction)logout:(id)sender {
-    [UserManager logout];
-    [self changedLoginStat:NO];
-}
-
-- (IBAction)login:(id)sender {
-    if ([self.textUsername.text isEqualToString:@""]) {
-        [[[UIAlertView alloc]initWithTitle:nil message:@"아이디를 넣어주세요."
-                                 delegate:nil
-                        cancelButtonTitle:nil
-                        otherButtonTitles:@"확인", nil] show];
+- (void)logout { // 네트워크 연결되지 않았다면 새로고침
+    NSString *urlString = [SCManager getAuthUrl:@"logout_as_nightdance.php"];
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
+    
+    if (jsonData == nil) {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다. 다시 시도해 주세요."
+                                                        delegate:nil
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];
+        [alert show];
         return;
+    } else {
+        if ([jsonData[@"isLogout"] boolValue] == NO) {
+            [[[UIAlertView alloc]initWithTitle:nil message:@"로그아웃 되지 않았습니다."
+                                      delegate:nil
+                             cancelButtonTitle:nil
+                             otherButtonTitles:@"확인", nil] show];
+            return;
+        } else {
+            [UserManager logout];
+        }
     }
-    
-    if ([self.textPassword.text isEqualToString:@""]) {
-        [[[UIAlertView alloc]initWithTitle:nil message:@"비밀번호를 넣어주세요."
-                                  delegate:nil
-                         cancelButtonTitle:nil
-                         otherButtonTitles:@"확인", nil] show];
-        return;
-    }
-    
-    NSDictionary *userInfo  = [SCManager getUserInfo:self.textUsername.text password:self.textPassword.text];
-    
-    if (userInfo == nil) {
-        [[[UIAlertView alloc]initWithTitle:nil message:@"아이디와 패스워드가 올바르지 않습니다."
-                                  delegate:nil
-                         cancelButtonTitle:nil
-                         otherButtonTitles:@"확인", nil] show];
-        return;
-    }
-    
-    [UserManager login:userInfo];
-    
-    self.textPassword.text = @"";
-    
-    [self changedLoginStat:YES];
 }
 
 - (void) changedLoginStat:(BOOL)stat {
     if (stat) {
-        self.loginView.hidden   = YES;
-        self.tableView.tableHeaderView  = nil;
-        self.logoutView.hidden  = NO;
-        self.tableView.tableFooterView  = self.logoutView;
-        
         self.upperRightButton.enabled = false;
         self.upperRightButton.title  = @"";
-        self.upperLeftButton.enabled = true;
-        self.upperLeftButton.title  = @"엔캐시 충전";
         
         [self.view removeGestureRecognizer:self.tap];
     } else {
-        self.loginView.hidden   = NO;
-        self.tableView.tableHeaderView  = self.loginView;
-        self.logoutView.hidden  = YES;
-        self.tableView.tableFooterView  = nil;
-        
         self.upperRightButton.enabled = true;
         self.upperRightButton.title  = @"회원 가입";
-        self.upperLeftButton.enabled = false;
-        self.upperLeftButton.title  = @"";
-
-        [self.view addGestureRecognizer:self.tap];
+        
+        [self.view removeGestureRecognizer:self.tap];
     }
     
     [self.tableView reloadData];
@@ -181,6 +158,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(userUpdate:) name:@"NOTI_USER_UPDATE" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notiLogout:) name:@"NOTI_USER_LOGINOUT" object:nil];
 
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -188,14 +167,26 @@
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
+    self.isNetworkAvailable = YES;
+    
+    NSString *urlString = [SCManager getAuthUrl:@"get_userinfo.php"];
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
+    
+    if (jsonData == nil) {
+        self.isNetworkAvailable = NO;
+
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다. 다시 시도해 주세요."
+                                                        delegate:self
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];
+        [alert show];
+    } else {
+        NSDictionary *userinfo  = jsonData[@"user"];
+        
+        [UserManager setNcash:[userinfo objectForKey:@"user_mobile_ncash"]];
+        [UserManager setNickname:[userinfo objectForKey:@"nickname"]];
+    }
     
     self.tap = [[UITapGestureRecognizer alloc]
                                    initWithTarget:self
@@ -206,9 +197,39 @@
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    if (![UserManager isLogin]) {
-        [self.textUsername becomeFirstResponder];
+//    if (![UserManager isLogin]) {
+//        [self.textUsername becomeFirstResponder];
+//    }
+    
+    [self.tableView reloadData];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
+    if (section == 1) {
+        if ([UserManager isLogin] == YES) {
+            return @"로그아웃 하면 자동으로 활성화 됩니다.";
+        } else {
+            return @"iCloud가 활성화 되면, 즐겨찾기와 자유이용권 등의 정보가 자동으로 공유됩니다. 아이폰 설정에서 제어하실 수 있습니다.";
+        }
     }
+    return nil;
 }
 
 //- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
@@ -227,26 +248,57 @@
     // Dispose of any resources that can be recreated.
 }
 
+#pragma mark - Accessors
+- (void) setIsNetworkAvailable:(BOOL)isNetworkAvailable {
+    _isNetworkAvailable = isNetworkAvailable;
+    
+    if (isNetworkAvailable) {
+        [self.logoutButton setTitle:@"로그아웃" forState:UIControlStateNormal];
+        [self.logoutButton setTitle:@"로그아웃" forState:UIControlStateHighlighted];
+        self.logoutButton.tag   = ButtonStatusLogOut;
+    } else {
+        [self.logoutButton setTitle:@"새로 고침" forState:UIControlStateNormal];
+        [self.logoutButton setTitle:@"새로 고침" forState:UIControlStateHighlighted];
+        self.logoutButton.tag   = ButtonStatusRefresh;
+    }
+}
+
+#pragma mark - Notification Observers
+
+//NSDictionary *aUserInfo = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithBool:NO], @"IS_LOGIN", nil];
+//[[NSNotificationCenter defaultCenter] postNotificationName:@"NOTI_USER_LOGINOUT"
+//                                                    object:nil
+//                                                  userInfo:aUserInfo];
+
+- (void) notiLogout:(NSNotification *) notification {
+    NSNumber *isLogin  = [[notification userInfo] objectForKey:@"IS_LOGIN"];
+    
+    [self changedLoginStat:[isLogin boolValue]];
+}
+
+- (void) userUpdate:(NSNotification *) notification {
+    [self.tableView reloadData];
+}
+
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     // Return the number of sections.
-    if (![UserManager isLogin]) {
-        return 0;
-    }
     return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    // Return the number of rows in the section.
-    if (![UserManager isLogin]) {
-        return 0;
-    }
-
-    if (section == 0) {
-        return 1;
+    if(section == 0) {
+        if ([UserManager isLogin]) {    // 로그인 시 닉네임 나옴
+            return 2;
+        } else {
+            return 1;
+        }
+        
+    } else if(section == 1) {
+        return 2;
     }
     return 1;
 }
@@ -255,15 +307,9 @@
 {
     if(section == 0)
     {
-        return @"기본 정보";
-    }
-    else if(section == 1)
-    {
-        return @"엔캐시 정보";
-    }
-    else if(section == 2)
-    {
-        return @"개인 정보";
+        return @"계정 관리";
+    } else if(section == 1) {
+        return @"앱 정보";
     }
     else
     {
@@ -273,18 +319,67 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Cell";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-    
     // Configure the cell...
     if (indexPath.section == 0 && indexPath.row == 0) {
+        static NSString *CellIdentifier = @"NcashCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+        cell.textLabel.text         = @"상태";
+        cell.detailTextLabel.text = ([UserManager isLogin])? @"로그인 됨" : @"로그인 되지 않음";
+        NSLog(@"UserManager getNcash = %@", cell.detailTextLabel.text);
+        if (self.isNetworkAvailable == NO) {
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.accessoryType  = UITableViewCellAccessoryNone;
+        } else {
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            
+            cell.accessoryType  = ([UserManager isLogin])? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryDisclosureIndicator;
+        }
+        
+        return cell;
+    } else if (indexPath.section == 0 && indexPath.row == 1) {
+        static NSString *CellIdentifier = @"NicknameCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
         cell.textLabel.text         = @"닉네임";
-        cell.detailTextLabel.text    = [UserManager getNickname];
+        cell.detailTextLabel.text = ([UserManager isLogin])? [UserManager getNickname] : @"로그인 되지 않음";
+        if (self.isNetworkAvailable == NO) {
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.accessoryType  = UITableViewCellAccessoryNone;
+        } else {
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+            cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
+        }
+        return cell;
     } else if (indexPath.section == 1 && indexPath.row == 0) {
-        cell.textLabel.text         = @"소유한 엔캐시";
-        cell.detailTextLabel.text = GetCommaNumber([UserManager getNcash]);
+        static NSString *CellIdentifier = @"InfoCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+        cell.textLabel.text         = @"앱 고유번호";
+        cell.detailTextLabel.text   = [SAManager getAppKey];
+
+        cell.accessoryType  = UITableViewCellAccessoryNone;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+        return cell;
+    } else if (indexPath.section == 1 && indexPath.row == 1) {
+        static NSString *CellIdentifier = @"InfoCell";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+        cell.textLabel.text         = @"iCloud";
+        if([NSUbiquitousKeyValueStore defaultStore]) {
+            if ([UserManager isLogin] == YES) {
+                cell.detailTextLabel.text   = @"비활성화";
+            } else {
+                cell.detailTextLabel.text   = @"활성화";
+            }
+        } else {
+            cell.detailTextLabel.text   = @"비활성화";
+        }
+        
+        cell.accessoryType  = UITableViewCellAccessoryNone;
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        return cell;
     }
-    cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
+    static NSString *CellIdentifier = @"Cell";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     return cell;
 }
 
@@ -327,16 +422,52 @@
 }
 */
 
-/*
-#pragma mark - Navigation
+// In a xib-based application, navigation from a table can be handled in -tableView:didSelectRowAtIndexPath:
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0 && indexPath.row == 0 && [UserManager isLogin]) {    // 로그아웃
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"로그아웃 하시겠습니까?"
+                                                         message:@"모든 정보는 초기화 됩니다."
+                                                        delegate:self
+                                               cancelButtonTitle:@"취소"
+                                               otherButtonTitles:@"로그아웃", nil];
+        alert.tag   = 1;
+        [alert show];
+    }
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    switch (alertView.tag) {
+        case 1:
+        {
+            if (buttonIndex == 1) {
+                [self logout];
+            }
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    [self.tableView deselectRowAtIndexPath:[self.tableView indexPathForSelectedRow] animated:YES];
+ }
+
+- (BOOL)shouldPerformSegueWithIdentifier:(NSString *)identifier sender:(id)sender {
+    if ([identifier isEqualToString:@"showLogin"]) {
+        return [UserManager isLogin] == NO;
+    }
+
+    return self.isNetworkAvailable;
+}
 
 // In a story board-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+    if ([[segue identifier] isEqualToString:@"showNickname"]) {
+//        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+//        DownloadClip *downloadClip  = [[DownloadManager sharedObject].downloadClips objectAtIndex:indexPath.row];
+//        [[segue destinationViewController] setClipId:downloadClip.clipId];
+    }
 }
-
- */
 
 @end

@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface NoDataCell : UITableViewCell
-
+@property (nonatomic, retain) IBOutlet UILabel *messageLabel;
 @end

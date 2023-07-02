@@ -7,15 +7,15 @@
 //
 
 #import "ClipCell.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation ClipCell
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+- (id)initWithCoder:(NSCoder *)aDecoder {   // this is it!
+    self = [super initWithCoder:aDecoder];
     if (self) {
         // Initialization code
-        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin];
+//        [self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin];
     }
     return self;
 }
@@ -25,6 +25,13 @@
     [super setSelected:selected animated:animated];
     
     // Configure the view for the selected state
+    self.thumbnail.layer.cornerRadius = 5;
+    self.thumbnail.layer.masksToBounds = YES;
+    [self.thumbnail.layer setBorderColor:[[UIColor lightGrayColor] CGColor]];
+    [self.thumbnail.layer setBorderWidth: 1.0];
 }
 
+- (void)setCommentCount:(NSNumber *)commentCount {
+    self.commentCountLabel.text = [NSString stringWithFormat:@"%@개", [commentCount stringValue]];
+}
 @end

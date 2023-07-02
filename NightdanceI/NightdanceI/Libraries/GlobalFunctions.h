@@ -9,3 +9,5 @@
 #import <Foundation/Foundation.h>
 
 NSString *GetCommaNumber(int number);
+NSString *GetHMFromSeconds(int seconds);
+int GetClockCount();

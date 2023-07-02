@@ -18,4 +18,6 @@
 @property (nonatomic, weak) IBOutlet UILabel *star2;
 @property (nonatomic, retain) IBOutlet StarsView *starsView1;
 @property (nonatomic, retain) IBOutlet StarsView *starsView2;
+@property (nonatomic, retain) IBOutlet UILabel *commentCountLabel;
+@property (nonatomic, retain) NSNumber *commentCount;
 @end

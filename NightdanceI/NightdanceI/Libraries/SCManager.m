@@ -9,17 +9,166 @@
 #import "SCManager.h"
 #include "../Global.h"
 #import "SAManager.h"
+#import "UserManager.h"
 
 @implementation SCManager
+
++ (SCManager*)sharedObject
+{
+    static dispatch_once_t once;
+    static SCManager *sharedObject;
+    dispatch_once(&once, ^{
+        sharedObject = [[self alloc] init];
+        // Session Initialize
+    });
+    return sharedObject;
+}
+
++(void)asyncJsonData:(NSString*)urlString delegate:(id)delegate {
+    
+}
+
++(NSString*)getAuthUrl:(NSString*)filename {
+    NSString *urlString   = [[NSString alloc] initWithFormat:@"%@%@%@%@", API_ROOT_URL, filename, @"?token=", [SAManager getAccessToken]];
+    return urlString;
+}
 
 +(NSString*)getAuthUrl:(NSString*)filename param:(NSString*)pStr {
     NSString *urlString   = [[NSString alloc] initWithFormat:@"%@%@%@%@%@%@", API_ROOT_URL, filename, @"?token=", [SAManager getAccessToken], @"&", pStr];
     return urlString;
 }
 
++(NSDictionary*)getJsonPostData:(NSString*)urlString post:(NSDictionary*)postObject {
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:urlString]];
+    NSMutableArray *postBody   = [NSMutableArray array];
+    id key;
+    id value;
+    // 값을 하나하나 변환
+    for(key in postObject)
+    {
+        value = [postObject objectForKey:key];
+        NSString *postPart = [NSString stringWithFormat:@"%@=%@", [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding],
+                [value stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+        [postBody addObject:postPart];
+    }
+    
+    [request setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
+    [request setHTTPBody:[[postBody componentsJoinedByString:@"&"] dataUsingEncoding:NSUTF8StringEncoding]];
+    [request setHTTPMethod:@"POST"];
+    NSError *error = nil; NSURLResponse *response = nil;
+    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+    if (data == nil) {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다."
+                                                        delegate:nil
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];;
+        [alert show];
+        return nil;
+    }
+    NSLog(@"data = %@", data);
+
+    NSDictionary *result  = [NSJSONSerialization
+                             JSONObjectWithData:data
+                             options:NSJSONReadingAllowFragments
+                             error:&error];
+    
+    if (error) {
+        NSLog(@"%@", [error localizedDescription]);
+    } else {
+        NSLog(@"Success Parsing, data = %@", result[@"response"]);
+        NSNumber *nightdanceUserid  = result[@"nightdance_user_id"];
+        if (nightdanceUserid != nil) {
+            if ([UserManager isLogin] && [nightdanceUserid intValue] == -1) {   // 앱은 로그인, 서버는 로그인이 아닐 경우
+                [UserManager logout];
+                UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"로그아웃"
+                                                                  message:@"다른 기기에서 로그인 되었기 때문에 로그아웃 됩니다."
+                                                                 delegate:nil
+                                                        cancelButtonTitle:@"확인"
+                                                        otherButtonTitles:nil];
+                [message show];
+            }
+        }
+    }
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    return result[@"response"];
+}
+
++(NSDictionary*)getJsonData:(NSString*)urlString {
+    NSLog(@"Request URL = %@", urlString);
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    NSURL *url  = [NSURL URLWithString:urlString];
+    NSData *data    = [[NSData alloc] initWithContentsOfURL:url];
+    
+    if (data == nil) {
+//        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+//                                                         message:@"네트워크가 원활하지 않습니다."
+//                                                        delegate:nil
+//                                               cancelButtonTitle:@"OK"
+//                                               otherButtonTitles:nil];;
+//        [alert show];
+        return nil;
+    }
+    
+    NSError *error;
+    NSDictionary *result  = [NSJSONSerialization
+                            JSONObjectWithData:data
+                            options:NSJSONReadingAllowFragments
+                            error:&error];
+    
+    if (error) {
+        NSLog(@"%@", [error localizedDescription]);
+    } else {
+        NSLog(@"Success Parsing");
+        NSNumber *nightdanceUserid  = result[@"nightdance_user_id"];
+        if (!nightdanceUserid) {
+            if ([UserManager isLogin] && [nightdanceUserid intValue] == -1) {   // 앱은 로그인, 서버는 로그인이 아닐 경우
+                [UserManager logout];
+                UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"로그아웃"
+                                                                  message:@"다른 기기에서 로그인 되었기 때문에 로그아웃 됩니다."
+                                                                 delegate:nil
+                                                        cancelButtonTitle:@"확인"
+                                                        otherButtonTitles:nil];
+                [message show];
+            }
+        }
+    }
+    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    return result[@"response"];
+}
+
++(NSArray*)getProductIds {
+    NSString *urlString = [NSString stringWithFormat:@"%@%@", API_ROOT_URL, @"get_product_ids.php"];
+    NSURL *url  = [NSURL URLWithString:urlString];
+    NSData *data    = [[NSData alloc] initWithContentsOfURL:url];
+    
+    if (data == nil) {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다."
+                                                        delegate:nil
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];;
+        [alert show];
+        return nil;
+    }
+    
+    NSError *error;
+    NSArray *productIds  = [NSJSONSerialization
+                 JSONObjectWithData:data
+                 options:NSJSONReadingAllowFragments
+                 error:&error];
+    
+    if (error) {
+        NSLog(@"%@", [error localizedDescription]);
+    } else {
+        NSLog(@"Success Parsing %@", productIds);
+    }
+    
+    return productIds;
+}
+
 +(NSDictionary *)getUserInfo:(NSString *)username password:(NSString *)password {
     NSDictionary *userInfo;
-//    NSString *urlString   = [[NSString alloc] initWithFormat:@"%@%@%@%@%@", API_ROOT_URL, @"login_as_nightdance.php?username=", username, @"&password=", password];
     NSString *urlString   = [SCManager getAuthUrl:@"login_as_nightdance.php" param:[NSString stringWithFormat:@"%@%@%@%@", @"username=", username, @"&password=", password]];
     NSLog(@"clipUrlString = %@", urlString);
     NSURL *url = [[NSURL alloc] initWithString:urlString];
@@ -59,12 +208,12 @@
     NSData *data    = [[NSData alloc] initWithContentsOfURL:url];
 
     if (data == nil) {
-        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
-                                                         message:@"네트워크가 원활하지 않습니다."
-                                                        delegate:nil
-                                               cancelButtonTitle:@"OK"
-                                               otherButtonTitles:nil];;
-        [alert show];
+//        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+//                                                         message:@"네트워크가 원활하지 않습니다."
+//                                                        delegate:nil
+//                                               cancelButtonTitle:@"OK"
+//                                               otherButtonTitles:nil];;
+//        [alert show];
         return nil;
     }
 

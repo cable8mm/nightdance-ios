@@ -15,6 +15,10 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
+        self.emptyLabel = [[UILabel alloc] initWithFrame:CGRectMake(0., 2., 74., 14.)];
+        self.emptyLabel.font    = [UIFont systemFontOfSize:12.];
+        self.emptyLabel.textColor   = [UIColor grayColor];
+        self.emptyLabel.text    = @"점수 없음";
         self.emptyStars = [[UIView alloc] initWithFrame:CGRectMake(0., 0., 74., 14.)];
         self.fullStars = [[UIView alloc] initWithFrame:CGRectMake(0., 0., 74., 14.)];
         self.fullStars.clipsToBounds    = YES;
@@ -29,6 +33,7 @@
             [self.fullStars addSubview:fullStarImage];
         }
         
+        [self addSubview:self.emptyLabel];
         [self addSubview:self.emptyStars];
         [self addSubview:self.fullStars];
     }
@@ -36,6 +41,15 @@
 }
 
 - (void)setScore:(int)v {
+    if (v < 1) {
+        self.emptyStars.hidden  = YES;
+        self.fullStars.hidden  = YES;
+        self.emptyLabel.hidden  = NO;
+    } else {
+        self.emptyStars.hidden  = NO;
+        self.fullStars.hidden  = NO;
+        self.emptyLabel.hidden  = YES;
+    }
     float scoreWidth    = (float)v * 7.;
     [self.fullStars setFrame:CGRectMake(0., 0., scoreWidth, 14.)];
 }

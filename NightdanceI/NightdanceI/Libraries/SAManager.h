@@ -15,5 +15,5 @@
 +(void)setAppKey;
 +(NSString *)getAccessToken;
 +(void)setAccessToken:(NSString*)token;
-+(void)syncForce;
++(BOOL)syncForce;
 @end

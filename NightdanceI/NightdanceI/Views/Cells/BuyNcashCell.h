@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BuyNcashCell : UITableViewCell
+@interface BuyNcashCell : UITableViewCell {
+    UIButton *buyButton;
+}
+
 @property (nonatomic, retain) IBOutlet UILabel *titleLabel;
 @property (nonatomic, retain) IBOutlet UIButton *buyButton;
+@property (nonatomic, retain) IBOutlet UILabel *descriptionLabel;
+
 @end

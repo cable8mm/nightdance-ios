@@ -11,11 +11,14 @@
 #include "SCManager.h"
 #import "ClipCell.h"
 #import "ClipDetailViewController.h"
+#import "NDCache.h"
+#import "ClipMoreCell.h"
 
 @interface SearchClipsViewController ()
 @property(nonatomic, retain) NSString *queryString;
 @property(strong, retain) NSMutableArray *clips;
-@property (strong ,nonatomic) NSMutableDictionary *cachedImages;
+@property (nonatomic) int pageNumber;
+@property (nonatomic) BOOL isNext;
 @end
 
 @implementation SearchClipsViewController
@@ -39,26 +42,12 @@
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-//    [self.clips removeAllObjects];
-//    NSString *clipUrlString   = [[NSString alloc] initWithFormat:@"%@%@%@", API_ROOT_URL, @"get_clips.php?token=", TOKEN];
-//    NSLog(@"clipUrlString = %@", clipUrlString);
-//    NSURL *clipUrl = [[NSURL alloc] initWithString:clipUrlString];
-//    NSData *clipData    = [[NSData alloc] initWithContentsOfURL:clipUrl];
-//    NSError *error;
-//    self.clips  = [NSJSONSerialization
-//                   JSONObjectWithData:clipData
-//                   options:NSJSONReadingAllowFragments
-//                   error:&error][@"clips"];
-//    
-//    if (error) {
-//        NSLog(@"%@", [error localizedDescription]);
-//    } else {
-//        NSLog(@"Success Parsing %@", self->clips);
-//    }
+
+    self.pageNumber = 0;
+    self.isNext = YES;
+    
     UINib *cellNib = [UINib nibWithNibName:@"ClipCell" bundle:nil];
     [self.tableView registerNib:cellNib forCellReuseIdentifier:@"ClipCell"];
-    
-    self.cachedImages = [[NSMutableDictionary alloc] init];
 }
 
 - (void)didReceiveMemoryWarning
@@ -93,14 +82,47 @@
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar
 {
     [searchBar resignFirstResponder];
+    self.pageNumber = 0;
     // Do the search...
     self.queryString    = searchBar.text;
-    self.clips  = nil;
-    [self.tableView reloadData];
+    if (self.clips != nil) {
+        [self.clips removeAllObjects];
+        self.clips  = nil;
+    }
+    self.clips  = [[NSMutableArray alloc] init];
+    [self getMoreClips];
+}
+
+- (void) getMoreClips {
+    self.pageNumber++;
+    NSString *queryWord = [self.queryString stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSString *params = [NSString stringWithFormat:@"word=%@&page=%d", queryWord, self.pageNumber];
+    NSString *urlString = [SCManager getAuthUrl:@"search_clips.php" param:params];
     
-    self->clips = [NSMutableArray arrayWithArray:[SCManager getSearchClips:self.queryString]];
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
     
-    [self.tableView reloadData];
+    if (jsonData != nil) {
+        [self.clips addObjectsFromArray:jsonData[@"clips"]];
+        self.isNext = [jsonData[@"is_next"] boolValue];
+        
+        [self.tableView reloadData];
+        
+        if ([self.clips count] == 0) {
+            UIAlertView *message = [[UIAlertView alloc] initWithTitle:@"검색 결과 없음"
+                                                              message:@"다른 검색어를 넣어보세요."
+                                                             delegate:nil
+                                                    cancelButtonTitle:nil
+                                                    otherButtonTitles:@"확인", nil];
+            [message show];
+        }
+    } else {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다. 다시 시도해 주세요."
+                                                        delegate:nil
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];
+        [alert show];
+    }
 }
 
 #pragma mark - Table view data source
@@ -114,58 +136,71 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     // Return the number of rows in the section.
-    return [self.clips count];
-    NSLog(@"self.clips count = %d", [self.clips count]);
-    if (tableView == self.searchDisplayController.searchResultsTableView) {
-        return [self.clips count];
+    if ([self.clips count] == 0) {
+        return 0;
+    }
+    
+    if (self.isNext) {
+        return [self.clips count] + 1;
     } else {
         return [self.clips count];
     }
-//    return [self.clips count];
+
+    return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (indexPath.row == [self.clips count]) {  // 모어 버튼
+        static NSString *CellIdentifier = @"ClipMoreCell";
+        ClipMoreCell *cell = (ClipMoreCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        
+        if (cell == nil) {
+            NSArray *nib    = [[NSBundle mainBundle] loadNibNamed:CellIdentifier owner:self options:nil];
+            cell = (ClipMoreCell*)[nib objectAtIndex:0];
+        }
+        
+        cell.messageLabel.text  = @"더 보기";
+        return cell;
+    }
+
     static NSString *CellIdentifier = @"ClipCell";
+    ClipCell *cell = (ClipCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     
-    // - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-    
-    ClipCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    if (cell == nil)
-    {
-        cell = [[ClipCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    if (cell == nil) {
+        NSArray *nib    = [[NSBundle mainBundle] loadNibNamed:CellIdentifier owner:self options:nil];
+        cell = (ClipCell*)[nib objectAtIndex:0];
     }
     
+    // Configure the cell...
     NSInteger unNum = [indexPath indexAtPosition: 1 ];
-    NSDictionary *clip   = [self->clips objectAtIndex:unNum];
-    cell.titleLabel.text = [clip objectForKey:@"clip_title"];
+    NSDictionary *clip   = [self.clips objectAtIndex:unNum];
+    cell.titleLabel.text = [NSString stringWithFormat:@"%d. %@",(int)unNum+1, [clip objectForKey:@"clip_title"]];
     cell.dancer.text    = [clip objectForKey:@"music_title"];
     NSString *star1 = [clip objectForKey:@"clip_rate1"];
     NSString *star2 = [clip objectForKey:@"clip_rate2"];
     cell.starsView1.score = [star1 intValue];
     cell.starsView2.score = [star2 intValue];
+    cell.commentCount = [clip objectForKey:@"comment_count"];
+
     cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
+
     
-    NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail_s"];
-    NSString *identifier = [NSString stringWithFormat:@"Cell%d",(int)indexPath.row];
+//    NSInteger unNum = [indexPath indexAtPosition: 1 ];
+//    NSDictionary *clip   = [self->clips objectAtIndex:unNum];
+//    cell.titleLabel.text = [clip objectForKey:@"clip_title"];
+//    cell.dancer.text    = [clip objectForKey:@"music_title"];
+//    NSString *star1 = [clip objectForKey:@"clip_rate1"];
+//    NSString *star2 = [clip objectForKey:@"clip_rate2"];
+//    cell.starsView1.score = [star1 intValue];
+//    cell.starsView2.score = [star2 intValue];
+//    cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
     
-    if([self.cachedImages objectForKey:identifier] != nil){
-        cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-    }else{
-        char const * s = [identifier  UTF8String];
-        dispatch_queue_t queue = dispatch_queue_create(s, 0);
-        dispatch_async(queue, ^{
-            UIImage *img = nil;
-            NSData *data = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:clipThumbnail]];
-            img = [[UIImage alloc] initWithData:data];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([tableView indexPathForCell:cell].row == indexPath.row) {
-                    [self.cachedImages setValue:img forKey:identifier];
-                    cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-                }
-            });
-        });
-    }
+    NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail"];
+    [[NDCache sharedObject] assignCachedImage:clipThumbnail
+                              completionBlock:^(UIImage *image) {
+                                  cell.thumbnail.image  = image;
+                              }];
     
     return cell;
 }
@@ -224,6 +259,14 @@
     //
     //    // Push the view controller.
     //    [self.navigationController pushViewController:detailViewController animated:YES];
+    if (indexPath.row == [self.clips count]) {
+        ClipMoreCell *cell  = (ClipMoreCell*)[tableView cellForRowAtIndexPath:indexPath];
+        [cell.activityIndicator startAnimating];
+        [self getMoreClips];
+        [cell.activityIndicator stopAnimating];
+        return;
+    }
+
     ClipCell *cell  = (ClipCell*)[tableView cellForRowAtIndexPath:indexPath];
     [self performSegueWithIdentifier:@"showDetail" sender:cell];
 }

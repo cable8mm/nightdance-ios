@@ -12,6 +12,7 @@
 #import "ClipCell.h"
 #import "StarsView.h"
 #import "SCManager.h"
+#import "NDCache.h"
 
 @interface ClipTableViewController ()
 @property (nonatomic, retain) NSArray *clips;
@@ -47,14 +48,15 @@
     [self.tableView registerNib:cellNib forCellReuseIdentifier:@"ClipCell"];
     
     self.cachedImages = [[NSMutableDictionary alloc] init];
-}
 
-- (void) viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
     if (self.clips == nil) {
         self.clips  = [NSMutableArray arrayWithArray:[SCManager getClips]];
         [self.tableView reloadData];
     }
+}
+
+- (void) viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
 }
 
 - (void)didReceiveMemoryWarning
@@ -100,26 +102,31 @@
     cell.starsView2.score = [star2 intValue];
     cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
 
-    NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail_s"];
-    NSString *identifier = [NSString stringWithFormat:@"Cell%d",(int)indexPath.row];
+    NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail"];
+//    NSString *identifier = [NSString stringWithFormat:@"Cell%d",(int)indexPath.row];
     
-    if([self.cachedImages objectForKey:identifier] != nil){
-        cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-    }else{
-        char const * s = [identifier  UTF8String];
-        dispatch_queue_t queue = dispatch_queue_create(s, 0);
-        dispatch_async(queue, ^{
-            UIImage *img = nil;
-            NSData *data = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:clipThumbnail]];
-            img = [[UIImage alloc] initWithData:data];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                if ([tableView indexPathForCell:cell].row == indexPath.row) {
-                    [self.cachedImages setValue:img forKey:identifier];
-                    cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-                }
-            });
-        });
-    }
+    [[NDCache sharedObject] assignCachedImage:clipThumbnail
+                              completionBlock:^(UIImage *image) {
+                                  cell.thumbnail.image  = image;
+                              }];
+    
+//    if([self.cachedImages objectForKey:identifier] != nil){
+//        cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
+//    }else{
+//        char const * s = [identifier  UTF8String];
+//        dispatch_queue_t queue = dispatch_queue_create(s, 0);
+//        dispatch_async(queue, ^{
+//            UIImage *img = nil;
+//            NSData *data = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:clipThumbnail]];
+//            img = [[UIImage alloc] initWithData:data];
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                if ([tableView indexPathForCell:cell].row == indexPath.row) {
+//                    [self.cachedImages setValue:img forKey:identifier];
+//                    cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
+//                }
+//            });
+//        });
+//    }
     
     return cell;
 }

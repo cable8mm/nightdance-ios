@@ -13,22 +13,46 @@
 #import "ClipDetailViewController.h"
 #import "PackDetailViewController.h"
 #import "ClipMoreCell.h"
+#import "CategoriesViewController.h"
+#import "NDCache.h"
+#import "UserManager.h"
 
 @interface ClipsPacksViewController ()
 @property(nonatomic, retain) NSMutableArray *clips;
 @property(nonatomic, retain) NSArray *packs;
 @property(nonatomic, retain) IBOutlet UISegmentedControl *clipPackButton;
 @property(nonatomic, retain) IBOutlet UIBarButtonItem *categoryButton;
-@property (strong ,nonatomic) NSMutableDictionary *cachedImages;
-
+@property(nonatomic, retain) IBOutlet UIBarButtonItem *ticketButton;
+@property (nonatomic) int pageNumber;
+@property(nonatomic, getter = isNetworkAvailable) BOOL isNetworkAvailable;
 - (IBAction)clipPackChanged:(id)sender;
 @end
 
 @implementation ClipsPacksViewController
 
+@synthesize selectedCategoryId;
+@synthesize isNetworkAvailable = _isNetworkAvailable;
+
+// delegate Method
+- (void)recieveData:(NSArray *)theData {
+    //Do something with data here
+    if (self.selectedCategoryId == [[theData objectAtIndex:0] intValue]) {
+        return;
+    }
+    self.selectedCategoryId = [[theData objectAtIndex:0] intValue];
+    self.categoryButton.title   = [theData objectAtIndex:1];
+    NSLog(@"receiveData = %@", theData);
+    [self reloadClips];
+    [self.tableView scrollToRowAtIndexPath:
+     [NSIndexPath indexPathForRow:0 inSection:0]
+                        atScrollPosition:UITableViewScrollPositionBottom
+                                animated:YES];
+}
+
+#pragma mark - IBActions
 - (IBAction)clipPackChanged:(id)sender {    // 0 : 강좌, 1 : 패키지
     UISegmentedControl *topButton   = (UISegmentedControl*)sender;
-    NSLog(@"clipPack = %d", topButton.selectedSegmentIndex);
+    NSLog(@"clipPack = %d", (int)topButton.selectedSegmentIndex);
     
     // 카테고리 버튼
     if ([self isClipsViewed]) {
@@ -64,31 +88,95 @@
     return self;
 }
 
+- (void)reloadClips {
+    self.clips  = nil;
+    self.pageNumber = 1;
+    NSString *urlString;
+    if (self.selectedCategoryId == 99) {
+        urlString = [SCManager getAuthUrl:@"get_clips.php"];
+    } else {
+        NSString *params = [NSString stringWithFormat:@"category_id=%d&page=%d", self.selectedCategoryId, self.pageNumber];
+        urlString = [SCManager getAuthUrl:@"get_clips.php" param:params];
+    }
+    
+    self.pageNumber++;
+    
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
+    
+    if (jsonData == nil) {
+        self.isNetworkAvailable = NO;
+    }
+    
+    self.clips  = [NSMutableArray arrayWithArray:jsonData[@"clips"]];
+    [self.tableView reloadData];
+}
+
+- (void) setIsNetworkAvailable:(BOOL)v {
+    if (_isNetworkAvailable == v) {
+        return;
+    }
+
+    _isNetworkAvailable = v;
+    
+    self.categoryButton.enabled = self.ticketButton.enabled = _isNetworkAvailable;
+}
+
+- (BOOL) isNetworkAvailable {
+    return _isNetworkAvailable;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    _isNetworkAvailable = YES;
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
     
-    self.cachedImages = [[NSMutableDictionary alloc] init];
+    self.selectedCategoryId = 99;   // 전체 보기
+    
+    [self reloadClips];
 }
 
-- (void) viewDidAppear:(BOOL)animated {
+- (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    if (self.clips == nil) {
-        self.clips  = [NSMutableArray arrayWithArray:[SCManager getClips]];
-        [self.tableView reloadData];
-    }
 }
+
+//- (void) viewDidAppear:(BOOL)animated {
+//    [super viewDidAppear:animated];
+//    [self reloadClips];
+//     [self.tableView reloadData];
+//}
 
 - (void) getMoreClips {
-    [self.clips addObjectsFromArray:[SCManager getClips:[self.clips count]]];
-//    self.clips  = [NSMutableArray arrayWithArray:[SCManager getClips:[self.clips count]]];
-    [self.tableView reloadData];
+    NSString *urlString;
+    if (self.selectedCategoryId == 99) {
+        NSString *params = [NSString stringWithFormat:@"category_id=%d&page=%d", self.selectedCategoryId, self.pageNumber];
+        urlString = [SCManager getAuthUrl:@"get_clips.php" param:params];
+    } else {
+        NSString *params = [NSString stringWithFormat:@"category_id=%d&page=%d", self.selectedCategoryId, self.pageNumber];
+        urlString = [SCManager getAuthUrl:@"get_clips.php" param:params];
+    }
+    
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
+    
+    self.isNetworkAvailable = jsonData != nil;
+    
+    if (self.isNetworkAvailable) {
+        self.pageNumber++;
+        [self.clips addObjectsFromArray:jsonData[@"clips"]];
+        //    self.clips  = [NSMutableArray arrayWithArray:[SCManager getClips:[self.clips count]]];
+        [self.tableView reloadData];
+    } else {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다."
+                                                        delegate:nil
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];;
+        [alert show];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -150,29 +238,20 @@
         NSString *star2 = [clip objectForKey:@"clip_rate2"];
         cell.starsView1.score = [star1 intValue];
         cell.starsView2.score = [star2 intValue];
+        cell.commentCount   = [clip objectForKey:@"comment_count"];
+        
         cell.accessoryType  = UITableViewCellAccessoryDisclosureIndicator;
 
-        NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail_s"];
-        NSString *identifier = [NSString stringWithFormat:@"Cell%d",(int)indexPath.row];
+//        NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail_s"];
+//        NSString *identifier = [NSString stringWithFormat:@"Cell%d",(int)indexPath.row];
         
-        if([self.cachedImages objectForKey:identifier] != nil){
-            cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-        }else{
-            char const * s = [identifier  UTF8String];
-            dispatch_queue_t queue = dispatch_queue_create(s, 0);
-            dispatch_async(queue, ^{
-                UIImage *img = nil;
-                NSData *data = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:clipThumbnail]];
-                img = [[UIImage alloc] initWithData:data];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if ([tableView indexPathForCell:cell].row == indexPath.row) {
-                        [self.cachedImages setValue:img forKey:identifier];
-                        cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-                    }
-                });
-            });
-        }
-        
+        NSString *clipThumbnail = [clip objectForKey:@"clip_thumbnail"];
+        [[NDCache sharedObject] assignCachedImage:clipThumbnail
+                                  completionBlock:^(UIImage *image) {
+                                      if (image != nil) {
+                                          cell.thumbnail.image  = image;
+                                      }
+                                  }];
         return cell;
     }
 
@@ -182,29 +261,14 @@
         [self.tableView registerNib:cellNib forCellReuseIdentifier:CellIdentifier];
         
         PackCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-        NSString *packThumbnail = [[self.packs objectAtIndex:indexPath.row] objectForKey:@"thumbnail"];
-        
-        NSString *identifier = [NSString stringWithFormat:@"CellPack%d",(int)indexPath.row];
-        
-        if([self.cachedImages objectForKey:identifier] != nil){
-            cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-        }else{
-            char const * s = [identifier  UTF8String];
-            dispatch_queue_t queue = dispatch_queue_create(s, 0);
-            dispatch_async(queue, ^{
-                UIImage *img = nil;
-                NSData *data = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:packThumbnail]];
-                img = [[UIImage alloc] initWithData:data];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if ([tableView indexPathForCell:cell].row == indexPath.row) {
-                        [self.cachedImages setValue:img forKey:identifier];
-                        cell.thumbnail.image = [self.cachedImages valueForKey:identifier];
-                    }
-                });
-            });
-        }
 
-        
+        NSString *packThumbnail = [[self.packs objectAtIndex:indexPath.row] objectForKey:@"thumbnail"];
+        [[NDCache sharedObject] assignCachedImage:packThumbnail
+                                  completionBlock:^(UIImage *image) {
+                                      if (image != nil) {
+                                          cell.thumbnail.image  = image;
+                                      }
+                                  }];
         return cell;
     }
     return nil;
@@ -293,6 +357,13 @@
 {
     // Get the new view controller using [segue destinationViewController].
     // Pass the selected object to the new view controller.
+    if ([[segue identifier] isEqualToString:@"showCategories"]) {
+        UINavigationController *navController = segue.destinationViewController;
+        CategoriesViewController *categoryesViewController = (CategoriesViewController*)navController.topViewController;
+        categoryesViewController.checkedCategoryId  = self.selectedCategoryId;
+        categoryesViewController.delegate   = self;
+    }
+    
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         NSInteger unNum = [indexPath indexAtPosition: 1 ];

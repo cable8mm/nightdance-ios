@@ -14,15 +14,23 @@
                 <rect key="frame" x="0.0" y="0.0" width="320" height="79"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="코멘트 없음" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b6P-Um-ez5">
-                        <rect key="frame" x="93" y="21" width="134" height="38"/>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="코멘트 없음" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b6P-Um-ez5">
+                        <rect key="frame" x="93" y="30" width="134" height="23"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <fontDescription key="fontDescription" type="system" pointSize="19"/>
                         <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                         <nil key="highlightedColor"/>
                     </label>
                 </subviews>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="b6P-Um-ez5" secondAttribute="trailing" constant="93" id="KKH-Z8-alh"/>
+                    <constraint firstItem="b6P-Um-ez5" firstAttribute="top" secondItem="x6a-bp-gEE" secondAttribute="top" constant="30" id="l6A-Om-vLC"/>
+                    <constraint firstItem="b6P-Um-ez5" firstAttribute="leading" secondItem="x6a-bp-gEE" secondAttribute="leading" constant="93" id="myC-SW-b4v"/>
+                </constraints>
             </tableViewCellContentView>
+            <connections>
+                <outlet property="messageLabel" destination="b6P-Um-ez5" id="oyb-vl-Udw"/>
+            </connections>
         </tableViewCell>
     </objects>
 </document>

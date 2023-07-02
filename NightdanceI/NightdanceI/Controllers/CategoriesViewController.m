@@ -8,58 +8,77 @@
 
 #import "CategoriesViewController.h"
 #include "../Global.h"
+#import "SCManager.h"
+#import "ClipsPacksViewController.h"
 
 @interface CategoriesViewController ()
 @property (nonatomic, retain) NSMutableArray *categories;
+@property (nonatomic, retain) NSIndexPath *checkedIndexPath;
+@property(nonatomic) BOOL isNetworkAvailable;
 - (IBAction)close:(id)sender;
 @end
 
 @implementation CategoriesViewController
 
-@synthesize categories;
+@synthesize categories, checkedCategoryId, checkedIndexPath, delegate;
 
-- (id)initWithStyle:(UITableViewStyle)style
+- (void) setIsNetworkAvailable:(BOOL)v {
+    if (_isNetworkAvailable == v) {
+        return;
+    }
+    
+    _isNetworkAvailable = v;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
-    self = [super initWithStyle:style];
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
     }
     return self;
 }
 
+//- (id)initWithStyle:(UITableViewStyle)style
+//{
+//    self = [super initWithStyle:style];
+//    if (self) {
+//        // Custom initialization
+//    }
+//    return self;
+//}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-
+    self.extendedLayoutIncludesOpaqueBars   = YES;
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
  
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+    NSString *urlString   =  [SCManager getAuthUrl:@"get_categories.php"];
+    NSDictionary *jsonData  = [SCManager getJsonData:urlString];
     
-    NSString *clipUrlString   = [[NSString alloc] initWithFormat:@"%@%@%@", API_ROOT_URL, @"get_categories.php?token=", TOKEN];
-    NSURL *clipUrl = [[NSURL alloc] initWithString:clipUrlString];
-    NSData *clipData    = [[NSData alloc] initWithContentsOfURL:clipUrl];
-    NSError *error;
-    NSDictionary *dicCategories  = [NSJSONSerialization
-                         JSONObjectWithData:clipData
-                         options:NSJSONReadingAllowFragments
-                         error:&error];
-    
-    self->categories = [[NSMutableArray alloc] init];
-    if (error) {
-        NSLog(@"%@", [error localizedDescription]);
+    if (jsonData == nil) {
+        UIAlertView *alert =  [[UIAlertView alloc] initWithTitle:@"네트워크 에러"
+                                                         message:@"네트워크가 원활하지 않습니다. 다시 시도해 주세요."
+                                                        delegate:self
+                                               cancelButtonTitle:@"OK"
+                                               otherButtonTitles:nil];
+        [alert show];
+
     } else {
+        self->categories = [[NSMutableArray alloc] init];
         NSDictionary *allCategory = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:@"99", @"전체 강좌", @"all", nil]
                                                                 forKeys:[NSArray arrayWithObjects:@"id", @"name", @"path", nil]];
         [self->categories addObject:allCategory];
-        for (id key in [dicCategories allKeys]) {
-            if ([key integerValue] > 0 || [key length] < 3) {
-                [self->categories addObject:[dicCategories objectForKey:key]];
-            }
-        }
-        NSLog(@"Success Parsing %@", self->categories);
+        [self->categories addObjectsFromArray:[jsonData objectForKey:@"categories"]];
     }
+}
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -69,6 +88,11 @@
 }
 
 - (IBAction)close:(id)sender {
+    NSDictionary *category  = [self.categories objectAtIndex:self.checkedIndexPath.row];
+    NSArray *receive    = [NSArray arrayWithObjects:[NSNumber numberWithInt:self.checkedCategoryId]
+                           , [category objectForKey:@"name"]
+                           , nil];
+    [self.delegate recieveData:receive];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
@@ -76,14 +100,12 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-#warning Potentially incomplete method implementation.
     // Return the number of sections.
     return 1;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
     // Return the number of rows in the section.
     return [self->categories count];
 }
@@ -96,8 +118,41 @@
     // Configure the cell...
     NSInteger k = indexPath.row;
     NSDictionary *category   = [self->categories objectAtIndex:k];
+//    NSString *categoryName  = [NSString stringWithFormat:@"%@ [%d개]", [category objectForKey:@"name"], 40];
     cell.textLabel.text = [category objectForKey:@"name"];
+    cell.tag    = [[category objectForKey:@"id"] intValue];
+    if(self.checkedCategoryId == cell.tag)
+    {
+        self.checkedIndexPath   = indexPath;
+        cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    }
+    else
+    {
+        cell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    
     return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    
+    if(self.checkedCategoryId != cell.tag)
+    {
+        UITableViewCell* uncheckCell = [tableView
+                                        cellForRowAtIndexPath:self.checkedIndexPath];
+        uncheckCell.accessoryType = UITableViewCellAccessoryNone;
+    }
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    self.checkedCategoryId  = (int)cell.tag;
+    self.checkedIndexPath    = indexPath;
+    
+    [self close:self];
+//    NSArray *receive    = [NSArray arrayWithObject:[NSNumber numberWithInt:self.checkedCategoryId]];
+//    [self.delegate recieveData:receive];
 }
 
 /*

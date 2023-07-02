@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES">
+    <dependencies>
+        <deployment defaultVersion="1536" identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="70" id="9ey-pq-bEt" customClass="DownloadCell">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="66"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="9ey-pq-bEt" id="TEP-E3-Uy4">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="65"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="타이틀" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" preferredMaxLayoutWidth="156" translatesAutoresizingMaskIntoConstraints="NO" id="VYh-iL-ceU">
+                        <rect key="frame" x="70" y="12" width="156" height="21"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <progressView opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="750" progress="0.5" translatesAutoresizingMaskIntoConstraints="NO" id="pSw-hL-N9I">
+                        <rect key="frame" x="68" y="53" width="156" height="2"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    </progressView>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="no_thumbnail.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="7WN-tC-qUf">
+                        <rect key="frame" x="8" y="6" width="54" height="54"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    </imageView>
+                    <button autoresizesSubviews="NO" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DvP-Ew-1W1" customClass="DownloadCellButton">
+                        <rect key="frame" x="234" y="18" width="76" height="30"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="30" id="c68-cG-dua"/>
+                            <constraint firstAttribute="width" constant="76" id="ek8-er-ov8"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                        <state key="normal" title="강좌 시청">
+                            <color key="titleColor" red="0.0" green="0.50196081400000003" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                        </state>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="VYh-iL-ceU" firstAttribute="leading" secondItem="TEP-E3-Uy4" secondAttribute="leading" constant="70" id="9Hd-ak-M1d"/>
+                    <constraint firstAttribute="trailing" secondItem="VYh-iL-ceU" secondAttribute="trailing" constant="94" id="Pmw-bX-QlJ"/>
+                    <constraint firstAttribute="trailing" secondItem="pSw-hL-N9I" secondAttribute="trailing" constant="96" id="SoD-z5-c6B"/>
+                    <constraint firstAttribute="trailing" secondItem="DvP-Ew-1W1" secondAttribute="trailing" constant="10" id="gQJ-V4-u52"/>
+                    <constraint firstItem="pSw-hL-N9I" firstAttribute="leading" secondItem="TEP-E3-Uy4" secondAttribute="leading" constant="68" id="n9p-QP-yDm"/>
+                    <constraint firstItem="pSw-hL-N9I" firstAttribute="top" secondItem="TEP-E3-Uy4" secondAttribute="top" constant="53" id="ohV-LN-5cx"/>
+                    <constraint firstItem="DvP-Ew-1W1" firstAttribute="top" secondItem="TEP-E3-Uy4" secondAttribute="top" constant="18" id="uvN-vB-OoT"/>
+                    <constraint firstItem="VYh-iL-ceU" firstAttribute="top" secondItem="TEP-E3-Uy4" secondAttribute="top" constant="12" id="w7o-fi-qjj"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="downloadButton" destination="DvP-Ew-1W1" id="cbg-M8-IM6"/>
+                <outlet property="progressView" destination="pSw-hL-N9I" id="IP5-Be-MVW"/>
+                <outlet property="thumbnail" destination="7WN-tC-qUf" id="K3g-Vy-N5l"/>
+                <outlet property="titleLabel" destination="VYh-iL-ceU" id="b53-21-jrm"/>
+            </connections>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="no_thumbnail.jpg" width="200" height="195"/>
+    </resources>
+</document>

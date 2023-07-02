@@ -19,28 +19,47 @@
     return [[NSUUID UUID] UUIDString];
 }
 
-+(void)syncForce {
-    NSString *token     = [SCManager getAccessToken];
-    [SAManager setAccessToken:token];
++(BOOL)syncForce {
+    NSString *token     = [SAManager getAccessToken];
+    if (token == nil) {
+        return NO;
+    }
+    NSString *url    = [SCManager getAuthUrl:@"is_valid_access_token.php"];
+    NSDictionary *response = [SCManager getJsonData:url];
+    
+    if ([response[@"is_valid"] boolValue]) {
+        [SAManager setAccessToken:token];
+    } else {
+        NSString *accessToken   = [SCManager getAccessToken];
+        [SAManager setAccessToken:accessToken];
+    }
+    
+    return YES;
 }
 
 +(NSString *)getAccessToken {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *token = [defaults stringForKey:@"Token"];
-    
+    NSLog(@"SavedToken = %@", token);
     if (token != nil) {
         return token;
     }
     
     token   = [SCManager getAccessToken];
-    [SAManager setAccessToken:token];
     
+    if (token == nil) {
+        return nil;
+    }
+    
+    [SAManager setAccessToken:token];
     return token;
 }
 
 +(void)setAccessToken:(NSString*)token {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:token forKey:@"Token"];
+    [defaults synchronize];
+    NSLog(@"Set Token = %@", token);
 }
 
 +(NSString*)getAppKey {
@@ -49,7 +68,7 @@
     
     if (appKey == nil) {
         appKey  = [SAManager genAppKey];
-        [defaults setObject:@"AppKey" forKey:appKey];
+        [defaults setObject:appKey forKey:@"AppKey"];
         [defaults synchronize];
     }
     
@@ -62,7 +81,7 @@
     
     if (appKey == nil) {
         appKey  = [SAManager genAppKey];
-        [defaults setObject:@"AppKey" forKey:appKey];
+        [defaults setObject:appKey forKey:@"AppKey"];
         [defaults synchronize];
     }
 }

@@ -10,13 +10,14 @@
 #include "../Global.h"
 
 @interface CategoryViewController ()
+@property (nonatomic, retain) NSIndexPath* checkedIndexPath;
 @property (nonatomic, retain) NSArray *categories;
 - (IBAction)close:(id)sender;
 @end
 
 @implementation CategoryViewController
 
-@synthesize categories;
+@synthesize categories, checkedIndexPath;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -63,7 +64,6 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-#warning Potentially incomplete method implementation.
     // Return the number of sections.
     
     return 1;
@@ -71,7 +71,6 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-#warning Incomplete method implementation.
     // Return the number of rows in the section.
     return 13;
 }

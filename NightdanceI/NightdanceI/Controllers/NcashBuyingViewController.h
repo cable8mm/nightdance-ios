@@ -7,7 +7,9 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <StoreKit/StoreKit.h>
 
-@interface NcashBuyingViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate>
+@interface NcashBuyingViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate, SKProductsRequestDelegate, UIAlertViewDelegate> {
+}
 
 @end

@@ -19,4 +19,6 @@
 @property (nonatomic, weak) IBOutlet StarsView *clipRate1;    // 작품성
 @property (nonatomic, weak) IBOutlet StarsView *clipRate2;    // 실용성
 @property (nonatomic, weak) IBOutlet UITextView *descriptionView;    // 강의 내용
+@property (nonatomic, weak) IBOutlet UILabel *clipTerm;   // 이용 시간
+@property (nonatomic, weak) IBOutlet UILabel *price;   // 가격
 @end

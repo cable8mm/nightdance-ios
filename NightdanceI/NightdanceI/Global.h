@@ -15,4 +15,9 @@
 // Shared Secret = c3474a7e82384f9f8dc45136eea5d528
 #define API_CONSUMER_KEY @"iphone"
 #define API_SIGNATURE   @"dkdlvhs239"
+typedef NS_ENUM(NSUInteger, DownloadStatus) {
+    DownloadStatusReady     = 0,
+    DownloadStatusReceived  = 1,
+    DownloadStatusComplete  = 2
+};
 #endif
