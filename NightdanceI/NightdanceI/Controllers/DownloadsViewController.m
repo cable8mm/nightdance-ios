@@ -264,7 +264,7 @@
          DownloadCell *downloadCell = (DownloadCell*)sender;
 //         NSIndexPath *indexPath = downloadCell.indexpathRow;
          DownloadClip *downloadClip  = [[DownloadManager sharedObject].downloadClips objectAtIndex:downloadCell.indexpathRow];
-         [[segue destinationViewController] setClipId:downloadClip.clipId];
+//         [[segue destinationViewController] setClipId:downloadClip.clipId];
      }
 }
 @end
